@@ -1,0 +1,136 @@
+#include <Wire.h>
+#include <hd44780.h>                       // main hd44780 header
+#include <hd44780ioClass/hd44780_I2Cexp.h> // i2c expander i/o class header
+#include <DHT.h>                           // DHT sensor library
+
+hd44780_I2Cexp lcd; // declare lcd object: auto locate & auto config expander chip
+
+// Define analog sensor pins
+#define MQ2_PIN A0
+#define MQ9_PIN A1
+#define MQ7_PIN A2
+#define MQ6_PIN A3
+#define MQ8_PIN A4
+#define MQ135_PIN A5
+#define CO2_PIN A6
+
+// Define DHT sensor pin and type
+#define DHTPIN 2
+#define DHTTYPE DHT11
+DHT dht(DHTPIN, DHTTYPE);
+
+void setup() {
+  // Initialize the LCD
+  lcd.begin(20, 4); // initialize with 20 columns and 4 rows
+  lcd.backlight();
+  
+  // Initialize the DHT sensor
+  dht.begin();
+  
+  // Print a welcome message to check if the LCD is working
+  lcd.setCursor(0, 0);
+  lcd.print("Air Monitoring");
+  delay(2000); // Wait for 2 seconds to read the message
+}
+
+void loop() {
+  // Read sensor values
+  int mq2_value = analogRead(MQ2_PIN);
+  int mq9_value = analogRead(MQ9_PIN);
+  int mq7_value = analogRead(MQ7_PIN);
+  int mq6_value = analogRead(MQ6_PIN);
+  int mq8_value = analogRead(MQ8_PIN);
+  int mq135_value = analogRead(MQ135_PIN);
+  int co2_value = analogRead(CO2_PIN);
+
+  // Convert the raw values to voltage
+  float mq2_voltage = mq2_value * (5.0 / 1023.0);
+  float mq9_voltage = mq9_value * (5.0 / 1023.0);
+  float mq7_voltage = mq7_value * (5.0 / 1023.0);
+  float mq6_voltage = mq6_value * (5.0 / 1023.0);
+  float mq8_voltage = mq8_value * (5.0 / 1023.0);
+  float mq135_voltage = mq135_value * (5.0 / 1023.0);
+  float co2_voltage = co2_value * (5.0 / 1023.0);
+
+  // Read DHT sensor values
+  float temperature = dht.readTemperature();
+  float humidity = dht.readHumidity();
+
+  // Check if any reads failed and exit early (to try again).
+  if (isnan(temperature) || isnan(humidity)) {
+    lcd.setCursor(0, 0);
+    lcd.print("DHT sensor error");
+    delay(2000);
+    return;
+  }
+
+  // Display the sensor values on the LCD
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("MQ-2: ");
+  lcd.print(mq2_value);
+  lcd.print(" ");
+  lcd.print(mq2_voltage, 2); // Print voltage with 2 decimal places
+
+  lcd.setCursor(0, 1);
+  lcd.print("MQ-9: ");
+  lcd.print(mq9_value);
+  lcd.print(" ");
+  lcd.print(mq9_voltage, 2); // Print voltage with 2 decimal places
+
+  lcd.setCursor(0, 2);
+  lcd.print("MQ-7: ");
+  lcd.print(mq7_value);
+  lcd.print(" ");
+  lcd.print(mq7_voltage, 2); // Print voltage with 2 decimal places
+
+  lcd.setCursor(0, 3);
+  lcd.print("Temp: ");
+  lcd.print(temperature, 1); // Print temperature with 1 decimal place
+
+  delay(2000); // Update every 2 seconds
+
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("MQ-6: ");
+  lcd.print(mq6_value);
+  lcd.print(" ");
+  lcd.print(mq6_voltage, 2); // Print voltage with 2 decimal places
+
+  lcd.setCursor(0, 1);
+  lcd.print("MQ-8: ");
+  lcd.print(mq8_value);
+  lcd.print(" ");
+  lcd.print(mq8_voltage, 2); // Print voltage with 2 decimal places
+
+  lcd.setCursor(0, 2);
+  lcd.print("MQ-135: ");
+  lcd.print(mq135_value);
+  lcd.print(" ");
+  lcd.print(mq135_voltage, 2); // Print voltage with 2 decimal places
+
+  lcd.setCursor(0, 3);
+  lcd.print("Humidity: ");
+  lcd.print(humidity, 1); // Print humidity with 1 decimal place
+  lcd.print("%");
+
+  delay(2000); // Update every 2 seconds
+
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("CO2: ");
+  lcd.print(co2_value);
+  lcd.print(" ");
+  lcd.print(co2_voltage, 2); // Print voltage with 2 decimal places
+
+  lcd.setCursor(0, 1);
+  lcd.print("Temp: ");
+  lcd.print(temperature, 1); // Print temperature with 1 decimal place
+
+  lcd.setCursor(0, 2);
+  lcd.print("Humidity: ");
+  lcd.print(humidity, 1); // Print humidity with 1 decimal place
+  lcd.print("%");
+
+  delay(2000); // Update every 2 seconds
+}
